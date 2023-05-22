@@ -8,7 +8,7 @@
 typedef struct FileData {
     int xCursor;
     int yCursor;
-    struct LinkedList **fileLines;
+    struct LinkedList *fileLines;
 } FileData;
 
 typedef struct LinkedList {
@@ -24,7 +24,7 @@ typedef struct ListNode {
 } ListNode;
 
 FileData* initFile(void);
-void insert_char(FileData *myFile, char newChar);
-void remove_char(FileData *myFile);
+void insert_char(FileData *myFileData, char newChar);
+void remove_char(FileData *myFileData);
 
 #endif
