@@ -8,13 +8,13 @@
 typedef struct FileData {
     int xCursor;
     int yCursor;
-    struct LinkedList **fileLine;
+    struct LinkedList **fileLines;
 } FileData;
 
 typedef struct LinkedList {
     int numOfNodes;
-    ListNode *firstNode;
-    ListNode *lastNode;
+    ListNode *head;
+    ListNode *tail;
 } LinkedList;
 
 typedef struct ListNode {

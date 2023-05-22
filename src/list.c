@@ -20,12 +20,97 @@ FileData* initFile(void)
     return myFileData;
 }
 
+// insereaza un caracter in functie de pozitia cursorului
 void insert_char(FileData *myFileData, char newChar)
 {
-    // insereaza un caracter in functie de pozitia cursorului
+    int x = myFileData->xCursor;
+    int y = myFileData->yCursor;
+    int nodesCount = currentLine->numOfNodes;
+    ListNode *newNode = malloc(sizeof(newNode));
+    newNode->Chr = newChar; 
+    LinkedList *currentLine = myFileData->fileLines[x];
+    if (nodesCount == 0) {
+        currentLine->head = newNode;
+        currentLine->head->next = currentLine->head->prev = NULL;
+        currentLine->tail = currentLine->head;
+    } else if (y == 0) {
+        newNode->prev = NULL;
+        newNode->next = currentLine->head;
+        currentLine->head->prev = newNode;
+        currentLine->head = newNode;
+    } else if (y == nodesCount) {
+        newNode->prev = currentLine->tail;
+        newNode->next = NULL;
+        currentLine->tail->next = newNode;
+        currentLine->tail = newNode;
+    } else {
+        ListNode *aux;
+        int i;
+        if (y <= nodesCount / 2) {
+            aux = currentLine->head;
+            for (i = 0; i < y - 1; i++) {
+                aux = aux->next;
+            }
+            newNode->prev = aux;
+            newNode->next = aux->next;
+            aux->next->prev = newNode;
+            aux->next = newNode;
+        } else {
+            aux = currentLine->tail;
+            for (i = nodesCount - 1; i > y; i--) {
+                aux = aux->prev;               
+            }
+            newNode->prev = aux->prev;
+            newNode->next = aux;
+            aux->prev->next = newNode;
+            aux->prev = newNode;
+        }
+    }
+    myFileData->yCursor++;
+    currentLine->numOfNodes++;
 }
 
+// sterge un caracter in functie de pozitia cursorului
 void remove_char(FileData *myFileData)
 {
-    // sterge un caracter in functie de pozitia cursorului
+    int y = myFileData->yCursor;
+    int x = myFileData->xCursor;
+    int nodesCount = currentLine->numOfNodes;
+    ListNode *aux;
+    LinkedList *currentLine = myFileData->fileLines[x];
+    if (y == 0) {
+        aux = currentLine->head;
+        currentLine->head = currentLine->head->next;
+        currentLine->head->prev = NULL;
+        free(aux);
+    } else if (y == nodesCount - 1) {
+        aux = currentLine->tail;
+        currentLine->tail = currentLine->tail->prev;
+        currentLine->tail->next = NULL;
+        free(aux);
+    } else {
+        ListNode *temp;
+        int i;
+        if (y <= nodesCount / 2) {
+            aux = currentLine->head;
+            for (i = 0; i < y - 1; i++) {
+                aux = aux->next;
+            }
+            *temp = aux->next;
+            temp->next->prev = aux;
+            temp->prev->next = temp->next;
+            free(temp);
+        } else {
+            aux = currentLine->tail;
+            for (i = nodesCount - 1; i > y + 1; i--) {
+                aux = aux->prev;
+            }
+            *temp = aux->prev;
+            temp->prev->next = aux;
+            temp->next->prev = temp->prev;
+            free(temp); 
+        }
+    }  
+    myFileData->y--;
+    currentLine->numOfNodes--;
 }
