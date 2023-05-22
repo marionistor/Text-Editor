@@ -8,6 +8,7 @@
 typedef struct FileData {
     int xCursor;
     int yCursor;
+    int numOfLines;
     struct LinkedList *fileLines;
 } FileData;
 
@@ -19,11 +20,12 @@ typedef struct LinkedList {
 
 typedef struct ListNode {
     char Chr;
-    LinkedList *next;
-    LinkedList *prev;
+    ListNode *next;
+    ListNode *prev;
 } ListNode;
 
 FileData* initFile(void);
+void free_FileData(FileData *myFileData);
 void insert_char(FileData *myFileData, char newChar);
 void remove_char(FileData *myFileData);
 
