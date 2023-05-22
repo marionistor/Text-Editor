@@ -111,6 +111,6 @@ void remove_char(FileData *myFileData)
             free(temp); 
         }
     }  
-    myFileData->y--;
+    myFileData->yCursor--;
     currentLine->numOfNodes--;
 }
