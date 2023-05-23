@@ -24,7 +24,7 @@ FileData* initFile(void)
 void free_FileData(FileData *myFileData)
 {
     int i;
-    for (i = 0; i < MIN_NUM_OF_LINES; i++) {
+    for (i = 0; i < myFileData->numOfLines; i++) {
         ListNode *aux = myFileData->fileLines[i].head;
         while (aux) {
             ListNode *temp = aux;
@@ -237,13 +237,13 @@ void keyBackspace(FileData *myFileData)
     myFileData->xCursor--;
 }
 
-void printFileDataOnStdScr(FileData *myFileDta)
+void printFileDataOnStdScr(FileData *myFileData)
 {
     clear();
     refresh();   
     int i;
-    for (i = 0; i < myFileDta->numOfLines; i++) {
-        ListNode *tempNode = myFileDta->fileLines[i].head;
+    for (i = 0; i < myFileData->numOfLines; i++) {
+        ListNode *tempNode = myFileData->fileLines[i].head;
 
         int y = 0;
         while (tempNode) {

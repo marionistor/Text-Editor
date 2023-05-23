@@ -4,7 +4,24 @@
 #include <ncurses.h>
 #include "list.h"
 
-#define UP 
+void save_file(FileData *myFileData)
+{
+    FILE *outputFile = fopen("untitled.txt", "w");
+    int i;
+    for (i = 0; i < myFileData->numOfLines; i++) {
+        ListNode *tempNode = myFileData->fileLines[i].head;
+
+        while (tempNode) {
+            putc(tempNode->Chr, outputFile);
+            tempNode = tempNode->next;
+        }
+        putc('\n', outputFile);
+    }
+
+    fclose(outputFile);
+    
+    free_FileData(myFileData);
+}
 
 void init_color_pairs (void) 
 {
@@ -104,7 +121,11 @@ void getCharsFromKeyboard(FileData *myFileData)
                 refresh();
             }
             break;
-            
+
+        case KEY_F(5):
+            save_file(myFileData);
+            exit(0);
+
         default:
             wmove(stdscr, myFileData->xCursor, myFileData->yCursor + 1);
             insert_char(myFileData, newChar);
