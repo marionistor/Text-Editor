@@ -207,7 +207,7 @@ void keyBackspace(FileData *myFileData)
 
     if (myFileData->fileLines[x].numOfNodes == 0) {
         int i;
-        for (i = x; i < myFileData->numOfLines - 2; i++) {
+        for (i = x; i < myFileData->numOfLines - 1; i++) {
             myFileData->fileLines[i] = myFileData->fileLines[i + 1];
         }
 
@@ -225,9 +225,13 @@ void keyBackspace(FileData *myFileData)
     myFileData->fileLines[x - 1].numOfNodes += myFileData->fileLines[x].numOfNodes;
 
     int i;
-    for (i = x; i < myFileData->numOfLines - 2; i++) {
+    for (i = x; i < myFileData->numOfLines - 1; i++) {
         myFileData->fileLines[i] = myFileData->fileLines[i + 1];
     }
+
+    myFileData->fileLines[myFileData->numOfLines - 1].head = NULL;
+    myFileData->fileLines[myFileData->numOfLines - 1].tail = NULL;
+    myFileData->fileLines[myFileData->numOfLines - 1].numOfNodes = 0;
 
     myFileData->numOfLines--;
     myFileData->xCursor--;

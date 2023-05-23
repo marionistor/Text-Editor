@@ -104,6 +104,7 @@ void getCharsFromKeyboard(FileData *myFileData)
                 refresh();
             }
             break;
+            
         default:
             wmove(stdscr, myFileData->xCursor, myFileData->yCursor + 1);
             insert_char(myFileData, newChar);
