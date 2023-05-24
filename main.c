@@ -4,6 +4,8 @@
 #include <ncurses.h>
 #include "list.h"
 
+#define ctrl(x) ((x) & 0x1f)
+
 void save_file(FileData *myFileData)
 {
     FILE *outputFile = fopen("untitled.txt", "w");
@@ -19,8 +21,64 @@ void save_file(FileData *myFileData)
     }
 
     fclose(outputFile);
-    
     free_FileData(myFileData);
+}
+
+void goToLine(FileData *myFileData)
+{
+    int yMax, xMax;
+    getmaxyx(stdscr, xMax, yMax);
+
+    wattron(stdscr, COLOR_PAIR(3));
+    mvwprintw(stdscr, xMax - 2, 1, "Introduceti linia cautata: ");
+    wattroff(stdscr, COLOR_PAIR(3));
+    refresh();
+
+    char number[300];
+
+    char newChar = wgetch(stdscr);
+    
+    int y = 28;
+    int index = 0;
+    while (newChar != '\n') {
+        if (strchr("1234567890", newChar) == NULL) {
+            wattron(stdscr, COLOR_PAIR(3));
+            mvwprintw(stdscr, xMax - 1, 1, "Introduceti doar cifre!!!");
+            wattroff(stdscr, COLOR_PAIR(3));
+            refresh();
+        } else {
+            mvwprintw(stdscr, xMax - 1, 1, "                         ");
+            refresh();
+            wmove(stdscr, xMax - 2, 28);
+            wattron(stdscr, COLOR_PAIR(3));
+            mvwaddch(stdscr, xMax - 2, y, newChar);
+            wattroff(stdscr, COLOR_PAIR(3));
+            refresh();
+            y++;
+            number[index++] = newChar;
+        }
+        newChar = wgetch(stdscr);
+    }
+
+    number[index] = '\0';
+    int num = atoi(number);
+
+    if (num >= myFileData->numOfLines) {
+        wattron(stdscr, COLOR_PAIR(3));
+        mvwprintw(stdscr, xMax - 1, 1, "Linia introdusa nu exista!!! Apasa orice tasta pentru a iesi!");
+        wattroff(stdscr, COLOR_PAIR(3));
+        wgetch(stdscr);
+        printFileDataOnStdScr(myFileData);
+        wmove(stdscr, myFileData->xCursor, myFileData->yCursor);
+        refresh();
+        return;
+    }
+
+    myFileData->yCursor = 0;
+    myFileData->xCursor = num;
+    printFileDataOnStdScr(myFileData);
+    wmove(stdscr, num, 0);
+    refresh();
 }
 
 void init_color_pairs (void) 
@@ -40,11 +98,47 @@ void getCharsFromKeyboard(FileData *myFileData)
     wmove(stdscr, myFileData->xCursor, myFileData->yCursor);
     refresh();
 
+    int xMax, yMax;
+    getmaxyx(stdscr, xMax, yMax);
+
     while (true) {
         int newChar = wgetch(stdscr);
         switch (newChar)
         {
+        case ctrl('l'):
+            goToLine(myFileData);
+            break;
+        case ctrl('v'): // paste buffer la pozita cursorului
+            pasteBuffer(myFileData);
+            printFileDataOnStdScr(myFileData);
+            wmove(stdscr, myFileData->xCursor, myFileData->yCursor);
+            break;  
+
+        case ctrl('f'):
+            highlightApparitions(myFileData);
+            //wgetch(stdscr);
+            break;
+
+        case ctrl('w'):
+            removeWord(myFileData);
+            break;
+
+        case ctrl('k'):
+            if (myFileData->numOfLines == myFileData->xCursor) {
+                break;
+            }
+
+            removeLine(myFileData);
+            printFileDataOnStdScr(myFileData);
+            wmove(stdscr, myFileData->xCursor, myFileData->yCursor);
+            refresh();
+            break;
+
         case KEY_DOWN:
+            if (myFileData->xCursor == xMax - 3) {
+                break;
+            }
+
             if (myFileData->numOfLines == myFileData->xCursor + 1) {
                 wmove(stdscr, ++myFileData->xCursor, 0);
                 myFileData->yCursor = 0;
@@ -69,6 +163,7 @@ void getCharsFromKeyboard(FileData *myFileData)
                 refresh();
             } else {
                 myFileData->xCursor++;
+                myFileData->numOfLines++;
                 myFileData->yCursor = 0;
                 wmove(stdscr, myFileData->xCursor, myFileData->yCursor);
                 refresh();
@@ -102,6 +197,9 @@ void getCharsFromKeyboard(FileData *myFileData)
             break;
         
         case '\n':
+            if (myFileData->xCursor == xMax - 3) {
+                break;
+            }
             keyEnter(myFileData);
             printFileDataOnStdScr(myFileData);
             wmove(stdscr, myFileData->xCursor, myFileData->yCursor);

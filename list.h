@@ -11,6 +11,7 @@ typedef struct FileData {
     int yCursor;
     int numOfLines;
     struct LinkedList *fileLines;
+    char buffer[200];
 } FileData;
 
 typedef struct LinkedList {
@@ -32,5 +33,9 @@ void remove_char(FileData *myFileData);
 void printFileDataOnStdScr(FileData *myFileData);
 void keyEnter(FileData *myFileData);
 void keyBackspace(FileData *myFileData);
+void removeLine(FileData *myFileData);
+void removeWord(FileData *myFileData);
+void pasteBuffer(FileData *myFileData);
+void highlightApparitions(FileData *myFileData);
 
 #endif

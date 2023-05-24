@@ -237,6 +237,266 @@ void keyBackspace(FileData *myFileData)
     myFileData->xCursor--;
 }
 
+void highlightApparitions(FileData *myFileData)
+{
+
+    int yMax, xMax;
+    getmaxyx(stdscr, xMax, yMax);
+    
+    char word[100];
+    int index = 0;
+
+    wattron(stdscr, COLOR_PAIR(3));
+    mvwprintw(stdscr, xMax - 2, 1, "Introduceti cuvantul pentru cautare: ");
+    wattroff(stdscr, COLOR_PAIR(3));
+    wmove(stdscr, xMax - 2, 38);
+    refresh();
+
+    int newChar = wgetch(stdscr);
+    int y = 38;
+    while (newChar != '\n') {
+        if (newChar == KEY_BACKSPACE) {
+            if (index != 0) {
+                y--;
+                mvwprintw(stdscr, xMax - 2, y, " ");
+                wmove(stdscr, xMax - 2, y);
+                index--;
+            }
+        } else {
+            wattron(stdscr, COLOR_PAIR(3));
+            mvwaddch(stdscr, xMax - 2, y, newChar);
+            wattroff(stdscr, COLOR_PAIR(3));
+            refresh();
+            y++;
+            word[index++] = newChar;
+        }
+        newChar = wgetch(stdscr);
+    }
+    word[index] = '\0';
+    int i;
+
+    for (i = 0; i < xMax; i++) {
+        int positions[100];
+        ListNode *currentLine = myFileData->fileLines[i].head;
+        char line[500];
+        int index = 0;
+        while (currentLine) {
+            line[index++] = currentLine->Chr;
+            currentLine = currentLine->next;
+        }
+        line[index] = '\0';
+        index = 0;
+        int y = 0, j = 0;
+        while (j < strlen(line)) {
+            if (word[index] == line[j]) {
+                if (index == strlen(word) - 1) {
+                    positions[index] = j;
+                    index = 0;
+                    int k;
+                    for (k = 0; k < strlen(word); k++) {
+                        wattron(stdscr, COLOR_PAIR(3));
+                        mvwaddch(stdscr, i, positions[k], word[k]);
+                        wattroff(stdscr, COLOR_PAIR(3));
+                    }
+                    y++;
+                    j = y;    
+                } else {
+                    positions[index++] = j;
+                    j++;
+                } 
+            } else {
+                index = 0;
+                y++;
+                j = y;
+            }
+        }
+    }
+    refresh();
+    wattron(stdscr, COLOR_PAIR(3));
+    mvwprintw(stdscr, xMax - 1, 1, "Apasa orice tasta pentru a iesi!");
+    wattroff(stdscr, COLOR_PAIR(3));
+    refresh();
+    wgetch(stdscr);
+    printFileDataOnStdScr(myFileData);
+    wmove(stdscr, myFileData->xCursor, myFileData->yCursor);
+    refresh();
+}
+
+void removeLine(FileData *myFileData)
+{
+    int i;
+
+    int index = 0;
+    ListNode *tempNode = myFileData->fileLines[myFileData->xCursor].head;
+    while (tempNode) {
+        myFileData->buffer[index++] = tempNode->Chr;
+        tempNode = tempNode->next;
+    }
+    myFileData->buffer[index] = '\0';
+
+    for (i = myFileData->xCursor; i < myFileData->numOfLines - 1; i++) {
+        myFileData->fileLines[i] = myFileData->fileLines[i + 1];
+    }
+
+    myFileData->fileLines[myFileData->numOfLines - 1].head = NULL;
+    myFileData->fileLines[myFileData->numOfLines - 1].tail = NULL;
+    myFileData->fileLines[myFileData->numOfLines - 1].numOfNodes = 0;
+    myFileData->yCursor = 0;
+
+    if (myFileData->numOfLines > 1 && myFileData->xCursor != myFileData->numOfLines - 1) {
+        myFileData->numOfLines--;
+    }
+}
+
+void removeWord(FileData *myFileData)
+{
+    int x = myFileData->xCursor;
+    int y = myFileData->yCursor;
+
+    int i;
+
+    if (y == myFileData->fileLines[x].numOfNodes) {
+        return;
+    }
+
+    ListNode *tempNode = myFileData->fileLines[x].head;
+
+    for (i = 0; i < y; i++) {
+        tempNode = tempNode->next;
+    }
+
+    if (tempNode->Chr == ' ') {
+        return;
+    }
+
+    ListNode *start = tempNode, *end = tempNode;
+    int lastWord = 0;
+    int firstWord = 0;
+
+    int leftChars = 0;
+    int rightChars = 0;
+
+    while (start->Chr != ' ') {
+        start = start->prev;
+        leftChars++;
+        if (start == NULL) {
+            firstWord = 1;
+            break;
+        }
+    }
+
+    while (end->Chr != ' ') {
+        end = end->next;
+        rightChars++;
+        if (end == NULL) {
+            lastWord = 1;
+            break;
+        }
+    }
+
+    if (start == NULL) {
+        tempNode = myFileData->fileLines[x].head;
+    } else {
+        tempNode = start->next;
+    }
+    int index = 0;
+    while (tempNode != end) {
+        myFileData->buffer[index++] = tempNode->Chr;
+        tempNode = tempNode->next;
+    }
+    myFileData->buffer[index] = '\0';
+
+    if (!firstWord && !lastWord) {
+        tempNode = start->next;
+        while (tempNode != end) {
+            ListNode *aux = tempNode;
+            tempNode = tempNode->next;
+            free(aux);
+        }
+        start->next = end;
+        end->prev = start;
+
+        int y = 0;
+        tempNode = myFileData->fileLines[x].head;
+        while (tempNode != start) {
+            y++;
+            tempNode = tempNode->next;
+        } 
+
+        printFileDataOnStdScr(myFileData);
+        myFileData->yCursor = y;
+        myFileData->fileLines[x].numOfNodes = myFileData->fileLines[x].numOfNodes - rightChars - leftChars + 1;
+        wmove(stdscr, myFileData->xCursor, y);
+        refresh();
+        return;
+    }
+
+    if (firstWord && lastWord) {
+        removeLine(myFileData);
+        printFileDataOnStdScr(myFileData);
+        wmove(stdscr, myFileData->xCursor, myFileData->yCursor);
+        refresh();
+        return;
+    }
+
+    if (firstWord) {
+        ListNode *aux = myFileData->fileLines[x].head;
+
+        while (aux != end) {
+            ListNode *temp = aux;
+            aux = aux->next;
+            free(temp);
+        }
+
+        myFileData->fileLines[x].head = end;
+        end->prev = NULL;
+
+        myFileData->fileLines[x].numOfNodes = myFileData->fileLines[x].numOfNodes - leftChars - rightChars + 1;
+        myFileData->yCursor = 0;
+
+        printFileDataOnStdScr(myFileData);
+        wmove(stdscr, myFileData->xCursor, 0);
+        refresh();
+        return;
+    }
+
+    if (lastWord) {
+        ListNode *aux = start->next;
+
+        while (aux) {
+            ListNode *temp = aux;
+            aux = aux->next;
+            free(temp);
+        }
+
+        start->next = NULL;
+        myFileData->fileLines[x].tail = start;
+        myFileData->fileLines[x].numOfNodes = myFileData->fileLines[x].numOfNodes - leftChars - rightChars + 1;
+        
+        int y = 0;
+        aux = myFileData->fileLines[x].head;
+
+        while (aux != start) {
+            y++;
+            aux = aux->next;
+        }
+
+        myFileData->yCursor = y;
+        printFileDataOnStdScr(myFileData);
+        wmove(stdscr, myFileData->xCursor, myFileData->yCursor);
+        refresh();
+        return;
+    }
+}
+
+void pasteBuffer(FileData *myFileData)
+{
+    int i;
+    for (i = 0; i < strlen(myFileData->buffer); i++) {
+        insert_char(myFileData, myFileData->buffer[i]);
+    }
+}
+
 void printFileDataOnStdScr(FileData *myFileData)
 {
     clear();
