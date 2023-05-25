@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -g
+CFLAGS = -g
 DEPS = include/list.h include/utils.h
 OBJS = main.o list.o utils.o
 LIBS = -lncurses

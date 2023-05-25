@@ -518,7 +518,7 @@ void goToLine(FileData *myFileData)
 
     char newChar = wgetch(stdscr);
     
-    int y = 28;
+    int y = 13;
     int index = 0;
     while (newChar != '\n') {
         if (strchr("1234567890", newChar) == NULL) {
@@ -529,7 +529,7 @@ void goToLine(FileData *myFileData)
         } else {
             mvwprintw(stdscr, xMax - 1, 1, "                         ");
             refresh();
-            wmove(stdscr, xMax - 2, 28);
+            wmove(stdscr, xMax - 2, 13);
             wattron(stdscr, COLOR_PAIR(3));
             mvwaddch(stdscr, xMax - 2, y, newChar);
             wattroff(stdscr, COLOR_PAIR(3));
@@ -582,11 +582,11 @@ void highlightApparitions(FileData *myFileData)
     wattron(stdscr, COLOR_PAIR(3));
     mvwprintw(stdscr, xMax - 2, 1, "Enter a word: ");
     wattroff(stdscr, COLOR_PAIR(3));
-    wmove(stdscr, xMax - 2, 38);
+    wmove(stdscr, xMax - 2, 15);
     refresh();
 
     int newChar = wgetch(stdscr);
-    int y = 38;
+    int y = 15;
     while (newChar != '\n') {
         if (newChar == KEY_BACKSPACE) {
             if (index != 0) {

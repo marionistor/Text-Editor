@@ -22,5 +22,6 @@ void goToLine(FileData *myFileData);
 int isValidChar(char c);
 void highlightApparitions(FileData *myFileData);
 void menu(FileData *myFileData);
+void getCharsFromKeyboard(FileData *myFileData);
 
 #endif
