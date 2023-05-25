@@ -510,7 +510,7 @@ void goToLine(FileData *myFileData)
     getmaxyx(stdscr, xMax, yMax);
 
     wattron(stdscr, COLOR_PAIR(3));
-    mvwprintw(stdscr, xMax - 2, 1, "Introduceti linia cautata: ");
+    mvwprintw(stdscr, xMax - 2, 1, "Go to line: ");
     wattroff(stdscr, COLOR_PAIR(3));
     refresh();
 
@@ -523,7 +523,7 @@ void goToLine(FileData *myFileData)
     while (newChar != '\n') {
         if (strchr("1234567890", newChar) == NULL) {
             wattron(stdscr, COLOR_PAIR(3));
-            mvwprintw(stdscr, xMax - 1, 1, "Introduceti doar cifre!!!");
+            mvwprintw(stdscr, xMax - 1, 1, "Enter a number!!!");
             wattroff(stdscr, COLOR_PAIR(3));
             refresh();
         } else {
@@ -545,7 +545,7 @@ void goToLine(FileData *myFileData)
 
     if (num >= myFileData->numOfLines) {
         wattron(stdscr, COLOR_PAIR(3));
-        mvwprintw(stdscr, xMax - 1, 1, "Linia introdusa nu exista!!! Apasa orice tasta pentru a iesi!");
+        mvwprintw(stdscr, xMax - 1, 1, "The line doesn't exist!!! Press any key to exit!");
         wattroff(stdscr, COLOR_PAIR(3));
         wgetch(stdscr);
         printFileDataOnStdScr(myFileData);
@@ -580,7 +580,7 @@ void highlightApparitions(FileData *myFileData)
     int index = 0;
 
     wattron(stdscr, COLOR_PAIR(3));
-    mvwprintw(stdscr, xMax - 2, 1, "Introduceti cuvantul pentru cautare: ");
+    mvwprintw(stdscr, xMax - 2, 1, "Enter a word: ");
     wattroff(stdscr, COLOR_PAIR(3));
     wmove(stdscr, xMax - 2, 38);
     refresh();
@@ -647,7 +647,7 @@ void highlightApparitions(FileData *myFileData)
  
     refresh();
     wattron(stdscr, COLOR_PAIR(3));
-    mvwprintw(stdscr, xMax - 1, 1, "Apasa orice tasta pentru a iesi!");
+    mvwprintw(stdscr, xMax - 1, 1, "Press any key to exit!");
     wattroff(stdscr, COLOR_PAIR(3));
     refresh();
     wgetch(stdscr);
@@ -728,7 +728,8 @@ void menu(FileData *myFileData)
                     endwin();
                     exit(0);
               } else if (newChar1 == '\n' && ok1 == 0) {
-                    endwin();
+                    free_FileData(myFileData);
+		    endwin();
                     exit(0);
               }  
             }       
@@ -756,9 +757,6 @@ void getCharsFromKeyboard(FileData *myFileData)
         int newChar = wgetch(stdscr);
         switch (newChar)
         {
-        //case KEY_F(12):
-        //    mvwprintw(stdscr, 20, 20, "merem");
-        //    break;
         case ctrl('i'):
             copyText(myFileData);
             wmove(stdscr, myFileData->xCursor, myFileData->yCursor);
@@ -880,10 +878,6 @@ void getCharsFromKeyboard(FileData *myFileData)
                 refresh();
             }
             break;
-
-        case KEY_F(5):
-            save_file(myFileData);
-            exit(0);
 
         default:
             wmove(stdscr, myFileData->xCursor, myFileData->yCursor + 1);
