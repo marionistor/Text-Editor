@@ -105,8 +105,15 @@ void getCharsFromKeyboard(FileData *myFileData)
         int newChar = wgetch(stdscr);
         switch (newChar)
         {
+        //case KEY_F(12):
+        //    mvwprintw(stdscr, 20, 20, "merem");
+        //    break;
+
         case ctrl('l'):
-            goToLine(myFileData);
+            //goToLine(myFileData);
+            //break;
+            copyText(myFileData);
+            wmove(stdscr, myFileData->xCursor, myFileData->yCursor);
             break;
         case ctrl('v'): // paste buffer la pozita cursorului
             pasteBuffer(myFileData);

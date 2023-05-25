@@ -495,7 +495,8 @@ void pasteBuffer(FileData *myFileData)
     for (i = 0; i < strlen(myFileData->buffer); i++) {
         insert_char(myFileData, myFileData->buffer[i]);
     }
-}
+    return;
+}    
 
 void printFileDataOnStdScr(FileData *myFileData)
 {
@@ -510,6 +511,173 @@ void printFileDataOnStdScr(FileData *myFileData)
             mvprintw(i, y, "%c", tempNode->Chr);
             y++;
             tempNode = tempNode->next;
+        }
+    }
+}
+
+void printHighlghtedFileDataOnStdScr(FileData *myFileData, int firstX, int firstY, int secondX, int secondY)
+{
+    clear();
+    refresh();   
+    int i;
+
+    int highlighted = 0;
+    for (i = 0; i < myFileData->numOfLines; i++) {
+        ListNode *tempNode = myFileData->fileLines[i].head;
+
+        int y = 0;
+        while (tempNode) {
+
+            if (i < firstX || i > secondX) {
+                highlighted = 0;
+            } else if (i == firstX && y < firstY) {
+                highlighted = 0;
+            } else if (i == secondX && y > secondY) {
+                highlighted = 0;
+            } else {
+                highlighted = 1;
+            }
+
+            if (highlighted) {
+                wattron(stdscr, COLOR_PAIR(3));
+                mvprintw(i, y, "%c", tempNode->Chr);
+                wattroff(stdscr, COLOR_PAIR(3));
+            }
+
+            if (!highlighted) {
+                mvprintw(i, y, "%c", tempNode->Chr);
+            }
+
+            y++;
+            tempNode = tempNode->next;
+        }
+    }
+}
+
+void getBuffer(FileData *myFileData, int firstX, int firstY, int secondX, int secondY)
+{
+    int highlighted = 0;
+    int i;
+    int index = 0;
+
+    for (i = 0; i < myFileData->numOfLines; i++) {
+        ListNode *tempNode = myFileData->fileLines[i].head;
+
+        int y = 0;
+        while (tempNode) {
+
+            if (i < firstX || i > secondX) {
+                highlighted = 0;
+            } else if (i == firstX && y < firstY) {
+                highlighted = 0;
+            } else if (i == secondX && y > secondY) {
+                highlighted = 0;
+            } else {
+                highlighted = 1;
+            }
+
+            if (highlighted) {
+                myFileData->buffer[index++] = tempNode->Chr;
+            }
+
+            y++;
+            tempNode = tempNode->next;
+        }
+
+    }
+    myFileData->buffer[index] = '\0';
+}
+
+void copyText(FileData *myFileData)
+{
+    curs_set(0);
+    int firstX = myFileData->xCursor;
+    int firstY = myFileData->yCursor;
+
+    ListNode *tempNode = myFileData->fileLines[firstX].head;
+
+    if (myFileData->fileLines[myFileData->xCursor].numOfNodes == myFileData->yCursor) {
+        curs_set(1);
+        return;
+    }
+
+    int i;
+    for (i = 0; i < firstY; i++) {
+        tempNode = tempNode->next;
+    }
+
+    wattron(stdscr, COLOR_PAIR(3));
+    mvprintw(firstX, firstY, "%c", tempNode->Chr);
+    wattroff(stdscr, COLOR_PAIR(3));
+    refresh();
+
+
+    int newChar;
+    while (newChar = wgetch(stdscr)) {
+        switch(newChar) 
+        {
+            case KEY_RIGHT:
+
+                int tempNum = myFileData->fileLines[myFileData->xCursor].numOfNodes;
+                if (tempNum > myFileData->yCursor) {
+                    wmove(stdscr, myFileData->xCursor, ++myFileData->yCursor);
+                } else {
+                    break;
+                }
+
+                if (firstX < myFileData->xCursor) {
+                    printHighlghtedFileDataOnStdScr(myFileData, firstX, firstY, myFileData->xCursor, myFileData->yCursor);
+                } else if (firstX > myFileData->xCursor) {
+                    printHighlghtedFileDataOnStdScr(myFileData, myFileData->xCursor, myFileData->yCursor, firstX, firstY);
+                } else if (firstY < myFileData->yCursor) {
+                    printHighlghtedFileDataOnStdScr(myFileData, firstX, firstY, myFileData->xCursor, myFileData->yCursor);
+                } else {
+                    printHighlghtedFileDataOnStdScr(myFileData, myFileData->xCursor, myFileData->yCursor, firstX, firstY);
+                }
+                wmove(stdscr, myFileData->xCursor, myFileData->yCursor);
+                refresh();
+
+                break;
+            
+            case KEY_LEFT:
+
+                if (myFileData->yCursor) {
+                    wmove(stdscr, myFileData->xCursor, --myFileData->yCursor);
+                } else {
+                    break;
+                }
+
+                if (firstX < myFileData->xCursor) {
+                    printHighlghtedFileDataOnStdScr(myFileData, firstX, firstY, myFileData->xCursor, myFileData->yCursor);
+                } else if (firstX > myFileData->xCursor) {
+                    printHighlghtedFileDataOnStdScr(myFileData, myFileData->xCursor, myFileData->yCursor, firstX, firstY);
+                } else if (firstY < myFileData->yCursor) {
+                    printHighlghtedFileDataOnStdScr(myFileData, firstX, firstY, myFileData->xCursor, myFileData->yCursor);
+                } else {
+                    printHighlghtedFileDataOnStdScr(myFileData, myFileData->xCursor, myFileData->yCursor, firstX, firstY);
+                }
+                wmove(stdscr, myFileData->xCursor, myFileData->yCursor);
+                refresh();
+
+                break;
+
+            case '\n':
+                
+                if (firstX < myFileData->xCursor) {
+                    getBuffer(myFileData, firstX, firstY, myFileData->xCursor, myFileData->yCursor);
+                } else if (firstX > myFileData->xCursor) {
+                    getBuffer(myFileData, myFileData->xCursor, myFileData->yCursor, firstX, firstY);
+                } else if (firstY < myFileData->yCursor) {
+                    getBuffer(myFileData, firstX, firstY, myFileData->xCursor, myFileData->yCursor);
+                } else {
+                    getBuffer(myFileData, myFileData->xCursor, myFileData->yCursor, firstX, firstY);
+                }
+
+                
+                printFileDataOnStdScr(myFileData);
+                curs_set(1);
+                refresh();
+                return;
         }
     }
 }

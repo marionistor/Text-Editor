@@ -37,5 +37,8 @@ void removeLine(FileData *myFileData);
 void removeWord(FileData *myFileData);
 void pasteBuffer(FileData *myFileData);
 void highlightApparitions(FileData *myFileData);
+void printHighlghtedFileDataOnStdScr(FileData *myFileData, int firstX, int firstY, int secondX, int secondY);
+void getBuffer(FileData *myFileData, int firstX, int firstY, int secondX, int secondY);
+void copyText(FileData *myFileData);
 
 #endif
