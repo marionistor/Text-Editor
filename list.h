@@ -40,5 +40,8 @@ void highlightApparitions(FileData *myFileData);
 void printHighlghtedFileDataOnStdScr(FileData *myFileData, int firstX, int firstY, int secondX, int secondY);
 void getBuffer(FileData *myFileData, int firstX, int firstY, int secondX, int secondY);
 void copyText(FileData *myFileData);
+void menu(FileData *myFileData);
+int isValidChar(char c);
+void save_file(FileData *myFileData);
 
 #endif

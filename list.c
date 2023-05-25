@@ -2,6 +2,10 @@
 
 #define MIN_NUM_OF_LINES 500
 
+// height = 20, width = 45 
+#define HEIGHT 20
+#define WIDTH 45
+
 FileData* initFile(void)
 {
     FileData *myFileData = malloc(sizeof(FileData));
@@ -235,91 +239,6 @@ void keyBackspace(FileData *myFileData)
 
     myFileData->numOfLines--;
     myFileData->xCursor--;
-}
-
-void highlightApparitions(FileData *myFileData)
-{
-
-    int yMax, xMax;
-    getmaxyx(stdscr, xMax, yMax);
-    
-    char word[100];
-    int index = 0;
-
-    wattron(stdscr, COLOR_PAIR(3));
-    mvwprintw(stdscr, xMax - 2, 1, "Introduceti cuvantul pentru cautare: ");
-    wattroff(stdscr, COLOR_PAIR(3));
-    wmove(stdscr, xMax - 2, 38);
-    refresh();
-
-    int newChar = wgetch(stdscr);
-    int y = 38;
-    while (newChar != '\n') {
-        if (newChar == KEY_BACKSPACE) {
-            if (index != 0) {
-                y--;
-                mvwprintw(stdscr, xMax - 2, y, " ");
-                wmove(stdscr, xMax - 2, y);
-                index--;
-            }
-        } else {
-            wattron(stdscr, COLOR_PAIR(3));
-            mvwaddch(stdscr, xMax - 2, y, newChar);
-            wattroff(stdscr, COLOR_PAIR(3));
-            refresh();
-            y++;
-            word[index++] = newChar;
-        }
-        newChar = wgetch(stdscr);
-    }
-    word[index] = '\0';
-    int i;
-
-    for (i = 0; i < xMax; i++) {
-        int positions[100];
-        ListNode *currentLine = myFileData->fileLines[i].head;
-        char line[500];
-        int index = 0;
-        while (currentLine) {
-            line[index++] = currentLine->Chr;
-            currentLine = currentLine->next;
-        }
-        line[index] = '\0';
-        index = 0;
-        int y = 0, j = 0;
-        while (j < strlen(line)) {
-            if (word[index] == line[j]) {
-                if (index == strlen(word) - 1) {
-                    positions[index] = j;
-                    index = 0;
-                    int k;
-                    for (k = 0; k < strlen(word); k++) {
-                        wattron(stdscr, COLOR_PAIR(3));
-                        mvwaddch(stdscr, i, positions[k], word[k]);
-                        wattroff(stdscr, COLOR_PAIR(3));
-                    }
-                    y++;
-                    j = y;    
-                } else {
-                    positions[index++] = j;
-                    j++;
-                } 
-            } else {
-                index = 0;
-                y++;
-                j = y;
-            }
-        }
-    }
-    refresh();
-    wattron(stdscr, COLOR_PAIR(3));
-    mvwprintw(stdscr, xMax - 1, 1, "Apasa orice tasta pentru a iesi!");
-    wattroff(stdscr, COLOR_PAIR(3));
-    refresh();
-    wgetch(stdscr);
-    printFileDataOnStdScr(myFileData);
-    wmove(stdscr, myFileData->xCursor, myFileData->yCursor);
-    refresh();
 }
 
 void removeLine(FileData *myFileData)
@@ -680,4 +599,205 @@ void copyText(FileData *myFileData)
                 return;
         }
     }
+}
+
+int isValidChar(char c)
+{
+    char specialChars[] = "!@#$%%^&*()-_+=`~{}[]\\|:;'\",./<>? ";
+    if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && (c < '0' || c > '9') && (strchr(specialChars, c) == NULL)) {
+        return 0;
+    }
+    return 1;    
+}
+
+void highlightApparitions(FileData *myFileData)
+{
+
+    int yMax, xMax;
+    getmaxyx(stdscr, xMax, yMax);
+    
+    char word[100];
+    int index = 0;
+
+    wattron(stdscr, COLOR_PAIR(3));
+    mvwprintw(stdscr, xMax - 2, 1, "Introduceti cuvantul pentru cautare: ");
+    wattroff(stdscr, COLOR_PAIR(3));
+    wmove(stdscr, xMax - 2, 38);
+    refresh();
+
+    int newChar = wgetch(stdscr);
+    int y = 38;
+    while (newChar != '\n') {
+        if (newChar == KEY_BACKSPACE) {
+            if (index != 0) {
+                y--;
+                mvwprintw(stdscr, xMax - 2, y, " ");
+                wmove(stdscr, xMax - 2, y);
+                index--;
+            }
+        } else if (isValidChar(newChar)) {
+            wattron(stdscr, COLOR_PAIR(3));
+            mvwaddch(stdscr, xMax - 2, y, newChar);
+            wattroff(stdscr, COLOR_PAIR(3));
+            refresh();
+            y++;
+            word[index++] = newChar;
+        }
+        newChar = wgetch(stdscr);
+    }
+    word[index] = '\0';
+    int i;
+
+    for (i = 0; i < xMax; i++) {
+        int positions[100];
+        ListNode *currentLine = myFileData->fileLines[i].head;
+        char line[500];
+        int index = 0;
+        while (currentLine) {
+            line[index++] = currentLine->Chr;
+            currentLine = currentLine->next;
+        }
+        line[index] = '\0';
+        index = 0;
+        int y = 0, j = 0;
+        while (j < strlen(line)) {
+            if (word[index] == line[j]) {
+                if (index == strlen(word) - 1) {
+                    positions[index] = j;
+                    index = 0;
+                    int k;
+                    for (k = 0; k < strlen(word); k++) {
+                        wattron(stdscr, COLOR_PAIR(3));
+                        mvwaddch(stdscr, i, positions[k], word[k]);
+                        wattroff(stdscr, COLOR_PAIR(3));
+                    }
+                    y++;
+                    j = y;    
+                } else {
+                    positions[index++] = j;
+                    j++;
+                } 
+            } else {
+                index = 0;
+                y++;
+                j = y;
+            }
+        }
+    }
+ 
+    refresh();
+    wattron(stdscr, COLOR_PAIR(3));
+    mvwprintw(stdscr, xMax - 1, 1, "Apasa orice tasta pentru a iesi!");
+    wattroff(stdscr, COLOR_PAIR(3));
+    refresh();
+    wgetch(stdscr);
+    printFileDataOnStdScr(myFileData);
+    wmove(stdscr, myFileData->xCursor, myFileData->yCursor);
+    refresh();
+}
+
+void menu(FileData *myFileData)
+{
+    clear();
+    refresh();
+    int xStart, yStart, xMax, yMax;
+    getmaxyx(stdscr, xMax, yMax);
+    xStart = (xMax - HEIGHT)/2;
+    yStart = (yMax - WIDTH)/2;
+    WINDOW *win = newwin(HEIGHT, WIDTH, xStart, yStart);
+    box(win, 0, 0);
+    getmaxyx(win, xMax, yMax);
+    wbkgd(win, COLOR_PAIR(2));
+    wrefresh(win);
+    curs_set(0);
+    mvwprintw(win, 4, (yMax - 30) / 2, "Use arrows to select an option");
+    mvwprintw(win, 5, (yMax - 16) / 2, "Then press enter");
+    mvwprintw(win, 8, (yMax - 4) / 2, "EXIT");
+    mvwprintw(win, 10, (yMax - 6) / 2, "CANCEL");
+    wrefresh(win);
+
+    keypad(win, true);
+    int ok = -1;
+    int newChar;
+    while ((newChar = wgetch(win))) {
+        if (newChar == KEY_UP) {
+            wattron(win, A_STANDOUT);
+            mvwprintw(win, 8, (yMax - 4) / 2, "EXIT");
+            wattroff(win, A_STANDOUT);
+            mvwprintw(win, 10, (yMax - 6) / 2, "CANCEL");
+            wrefresh(win);
+            ok = 1;
+        } else if (newChar == KEY_DOWN) {
+            mvwprintw(win, 8, (yMax - 4) / 2, "EXIT");
+            wattron(win, A_STANDOUT);
+            mvwprintw(win, 10, (yMax - 6) / 2, "CANCEL");
+            wattroff(win, A_STANDOUT);
+            wrefresh(win);
+            ok = 0;
+        } else if (newChar == '\n' && ok == 1) {
+            int i, j;
+            for (i = 3; i <= 10; i++) {
+                for (j = (yMax - 30) / 2; j < (yMax - 30) / 2 + 30; j++) {
+                    mvwprintw(win, i, j, " ");
+                }
+            }
+            mvwprintw(win, 6, (yMax - 30) / 2, "Do you want to save this file?");
+            mvwprintw(win, 8, (yMax - 3) / 2, "YES");
+            mvwprintw(win, 10, (yMax - 2) / 2, "NO");
+            wrefresh(win);
+
+            int ok1 = -1;
+            int newChar1;
+            while ((newChar1 = wgetch(win))) {
+                if (newChar1 == KEY_UP) {
+                    wattron(win, A_STANDOUT);
+                    mvwprintw(win, 8, (yMax - 3) / 2, "YES");
+                    wattroff(win, A_STANDOUT);
+                    mvwprintw(win, 10, (yMax - 2) / 2, "NO");
+                    wrefresh(win);
+                    ok1 = 1;
+              } else if ((newChar1 == KEY_DOWN)) {
+                    mvwprintw(win, 8, (yMax - 3) / 2, "YES");
+                    wattron(win, A_STANDOUT);
+                    mvwprintw(win, 10, (yMax - 2) / 2, "NO");
+                    wattroff(win, A_STANDOUT);
+                    wrefresh(win);
+                    ok1 = 0;
+              } else if (newChar1 == '\n' && ok1 == 1) {
+                    save_file(myFileData);
+                    endwin();
+                    exit(0);
+              } else if (newChar1 == '\n' && ok1 == 0) {
+                    endwin();
+                    exit(0);
+              }  
+            }       
+        } else if (newChar == '\n' && ok == 0) {
+            erase();
+            curs_set(1);
+            refresh();
+            printFileDataOnStdScr(myFileData);
+            wmove(stdscr, myFileData->xCursor, myFileData->yCursor);
+            refresh();
+            return;       
+        }
+    }
+}
+
+void save_file(FileData *myFileData)
+{
+    FILE *outputFile = fopen("untitled.txt", "w");
+    int i;
+    for (i = 0; i < myFileData->numOfLines; i++) {
+        ListNode *tempNode = myFileData->fileLines[i].head;
+
+        while (tempNode) {
+            putc(tempNode->Chr, outputFile);
+            tempNode = tempNode->next;
+        }
+        putc('\n', outputFile);
+    }
+
+    fclose(outputFile);
+    free_FileData(myFileData);
 }

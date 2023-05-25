@@ -6,24 +6,6 @@
 
 #define ctrl(x) ((x) & 0x1f)
 
-void save_file(FileData *myFileData)
-{
-    FILE *outputFile = fopen("untitled.txt", "w");
-    int i;
-    for (i = 0; i < myFileData->numOfLines; i++) {
-        ListNode *tempNode = myFileData->fileLines[i].head;
-
-        while (tempNode) {
-            putc(tempNode->Chr, outputFile);
-            tempNode = tempNode->next;
-        }
-        putc('\n', outputFile);
-    }
-
-    fclose(outputFile);
-    free_FileData(myFileData);
-}
-
 void goToLine(FileData *myFileData)
 {
     int yMax, xMax;
@@ -108,12 +90,12 @@ void getCharsFromKeyboard(FileData *myFileData)
         //case KEY_F(12):
         //    mvwprintw(stdscr, 20, 20, "merem");
         //    break;
-
-        case ctrl('l'):
-            //goToLine(myFileData);
-            //break;
+        case ctrl('i'):
             copyText(myFileData);
             wmove(stdscr, myFileData->xCursor, myFileData->yCursor);
+            break;
+        case ctrl('l'):
+            goToLine(myFileData);
             break;
         case ctrl('v'): // paste buffer la pozita cursorului
             pasteBuffer(myFileData);
@@ -123,7 +105,10 @@ void getCharsFromKeyboard(FileData *myFileData)
 
         case ctrl('f'):
             highlightApparitions(myFileData);
-            //wgetch(stdscr);
+            break;
+
+        case KEY_F(12):
+            menu(myFileData);
             break;
 
         case ctrl('w'):
